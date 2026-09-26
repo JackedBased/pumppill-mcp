@@ -1,0 +1,5 @@
+{
+  "servers": {
+    "pumppill": { "type": "http", "url": "https://api.pumppill.org/mcp" }
+  }
+}

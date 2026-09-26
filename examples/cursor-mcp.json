@@ -1,0 +1,5 @@
+{
+  "mcpServers": {
+    "pumppill": { "url": "https://api.pumppill.org/mcp" }
+  }
+}

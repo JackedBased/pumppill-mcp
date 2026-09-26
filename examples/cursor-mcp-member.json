@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "pumppill": {
+      "url": "https://api.pumppill.org/mcp",
+      "headers": { "Authorization": "Bearer <claim>" }
+    }
+  }
+}
