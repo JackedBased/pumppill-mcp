@@ -12,7 +12,7 @@ https://api.pumppill.org/mcp
 ```
 
 Streamable HTTP. No key, no account, nothing to install. Registry name:
-`org.pumppill/token-safety` (v1.2.0). How-to page: <https://www.pumppill.org/for-agents>
+`org.pumppill/token-safety` (v1.2.1). How-to page: <https://www.pumppill.org/for-agents>
 
 This repository holds the connection instructions, example client configs and the registry
 manifest. The server itself is hosted by PumpPill; its source is not published here.
