@@ -3,7 +3,7 @@
   "name": "org.pumppill/token-safety",
   "title": "PumpPill — token safety and measured outcomes",
   "description": "Token safety, deployer history, whale balances and measured outcomes on Robinhood Chain and Solana",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "websiteUrl": "https://www.pumppill.org/for-agents",
   "repository": {
     "url": "https://github.com/JackedBased/pumppill-mcp",
