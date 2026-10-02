@@ -12,7 +12,7 @@ https://api.pumppill.org/mcp
 ```
 
 Streamable HTTP. No key, no account, nothing to install. Registry name:
-`org.pumppill/token-safety` (v1.2.1). How-to page: <https://www.pumppill.org/for-agents>
+`org.pumppill/token-safety` (v1.2.2). How-to page: <https://www.pumppill.org/for-agents>
 
 This repository holds the connection instructions, example client configs and the registry
 manifest. The server itself is hosted by PumpPill; its source is not published here.
@@ -29,7 +29,7 @@ Nothing here predicts a price or recommends a trade.
 
 ## Tools
 
-### Public (15 tools, read-only, no key)
+### Public (17 tools, read-only, no key)
 
 | Tool | What it returns |
 |---|---|
@@ -46,13 +46,18 @@ Nothing here predicts a price or recommends a trade.
 | `sol_token_detail` | Any Solana token by mint: holders, bundled-launch read, what the deployer still holds, socials, and a one-sentence verdict. |
 | `outcomes_measured` | Forward-measured outcomes across both chains: the share of logged tokens that doubled, reached 5x, 10x, or never moved. Losers are in the denominator. |
 | `exit_check` | Can this token be sold, and what can the deployer still do to it: mint and freeze authority, dev share of supply, the liquidity position. Both chains. |
+| `fomo_gathering` | Tokens several different FOMO app traders bought inside a window (default 3 traders in 60 minutes), on both chains, with the market cap of the latest buy. Counts FOMO users, not all buyers; no trade sizes. |
 | `search` | Find PumpPill's read for a Robinhood Chain address, a Solana mint, or a ticker. Returns ids for `fetch`. Built for ChatGPT connectors and deep research. |
 | `fetch` | Fetch one result by the id `search` returned. Returns the stored read as text with its citation and as-of time. |
+| `membership_status` | Whether this connection carries an active PumpPill membership, its tier, and when it renews. An unauthenticated call answers `signed_in: false`, not an error. |
 
-### Member tools (5 tools)
+### Member tools (4 tools)
 
 These answer a PumpPill member. They are listed for everyone; called without a membership they
-answer with what sits behind them and a link, never an error.
+answer with what sits behind them and a link. Three of them can also be bought one call at a
+time with x402 (see [Pay per call](#pay-per-call-x402)).
+
+21 tools in all: 17 public, 4 for members, 3 of those payable per call.
 
 | Tool | What it returns |
 |---|---|
@@ -60,7 +65,6 @@ answer with what sits behind them and a link, never an error.
 | `premium_calls_recent` | The premium call table: Solana tokens PumpPill logged for members, newest first, with the market cap at logging and the move since. |
 | `my_watched_wallets` | The Robinhood Chain wallets this member follows: what each holds, its record beside the chain's base rate, recent activity. |
 | `x_chatter` | What X has been saying about one contract: posts naming it, distinct accounts, combined reach, and each poster's record on earlier calls. **Spends:** may use an hourly live-read budget. Annotated not read-only and not idempotent. |
-| `membership_status` | Whether this connection carries an active PumpPill membership, its tier, and when it renews. |
 
 ### Resource and prompts
 
@@ -149,13 +153,36 @@ curl -sX POST https://api.pumppill.org/mcp \
   -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-06-18","capabilities":{},"clientInfo":{"name":"curl","version":"0"}}}'
 ```
 
+## Pay per call (x402)
+
+No membership? An agent with a wallet can buy a single answer from three of the member tools,
+paid in USDC on Base through [x402](https://www.x402.org):
+
+| Tool | Price per call |
+|---|---|
+| `rh_scan_now` | $0.05 |
+| `x_chatter` | $0.05 |
+| `premium_calls_recent` | $0.10 |
+
+1. Call the tool. Without a membership or a payment, it answers with an x402 payment request:
+   the price, the network (Base), the asset (USDC) and where to pay.
+2. An x402 client signs a USDC authorization and repeats the same call with the payment in
+   `_meta["x402/payment"]`.
+3. The answer carries the settlement receipt in `_meta["x402/payment-response"]`.
+
+A payment is collected only when the tool returns a real answer: a miss, an error or a refused
+read costs nothing. One payment buys one call of one tool. `my_watched_wallets` stays members
+only. Clients without x402 support (Claude and ChatGPT today) show the request as an error that
+names both ways in.
+
 ## Limits
 
 - **Public tools spend nothing.** They answer from stored reads and never trigger a live scan.
   A token PumpPill has not read yet is queued for reading, and is usually available a few
   minutes later.
-- **Two tools spend**, and only for members: `rh_scan_now` and `x_chatter`. Both are annotated
-  as not read-only and not idempotent so a client asks before calling them.
+- **Two tools spend**, and only for a member or a caller who paid for that call: `rh_scan_now`
+  and `x_chatter`. Both are annotated as not read-only and not idempotent so a client asks
+  before calling them.
 - **Rate limits:** 240 requests a minute per address and 60 a minute per client, then HTTP 429.
 - **Coverage:** answers cover what PumpPill has scanned, not every contract on either chain.
 
@@ -173,7 +200,9 @@ curl -sX POST https://api.pumppill.org/mcp \
 
 The server records one line per tool call: the tool name, whether it succeeded, how long it
 took, whether a membership header was present (yes or no), and the name the client declares
-for itself. It does not record the membership token or who is asking. Member tools send the
+for itself. It does not record the membership token or who is asking. A paid call also keeps
+the payment record needed to settle it (tool, price, and the paying wallet named in the signed
+authorization). Member tools send the
 token to PumpPill only to check the membership. Full policy: <https://www.pumppill.org/privacy>
 
 ## Terms

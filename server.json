@@ -2,8 +2,8 @@
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "org.pumppill/token-safety",
   "title": "PumpPill — token safety and measured outcomes",
-  "description": "Token safety, deployer history, whale balances and measured outcomes on Robinhood Chain and Solana",
-  "version": "1.2.1",
+  "description": "Token safety and outcomes on Robinhood Chain and Solana; member tools pay-per-call in USDC via x402",
+  "version": "1.2.2",
   "websiteUrl": "https://www.pumppill.org/for-agents",
   "repository": {
     "url": "https://github.com/JackedBased/pumppill-mcp",
