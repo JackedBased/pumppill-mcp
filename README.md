@@ -12,7 +12,7 @@ https://api.pumppill.org/mcp
 ```
 
 Streamable HTTP. No key, no account, nothing to install. Registry name:
-`org.pumppill/token-safety` (v1.2.2). How-to page: <https://www.pumppill.org/for-agents>
+`org.pumppill/token-safety` (v1.3.0). How-to page: <https://www.pumppill.org/for-agents>
 
 This repository holds the connection instructions, example client configs and the registry
 manifest. The server itself is hosted by PumpPill; its source is not published here.
@@ -23,13 +23,19 @@ The questions that cost people money: can this contract be sold, which contract 
 behind a ticker, what has this deployer launched before, which wallets hold enough to move a
 pool, and what happened to the tokens PumpPill logged, with the losers counted.
 
+And what is happening now: which tokens traders on the FOMO app are gathering on, with
+PumpPill's own risk read beside each one, and the calls PumpPill's room posted with how each has
+done since, losers included. `whats_moving` returns both, plus the newest flags, in one call.
+
 Every result carries a `cite` string and a timestamp for when the read was taken. A token
 PumpPill has not read comes back as `found: false`, which means "not in the index", never "safe".
-Nothing here predicts a price or recommends a trade.
+Nothing here predicts a price or recommends a trade. Answers about a token carry a `trade_link`
+that opens it in PumpPill's Telegram trade bot; it is a place to trade, present on every token
+alike, not a pick.
 
 ## Tools
 
-### Public (17 tools, read-only, no key)
+### Public (20 tools, read-only, no key)
 
 | Tool | What it returns |
 |---|---|
@@ -40,14 +46,17 @@ Nothing here predicts a price or recommends a trade.
 | `rh_stock_pairs` | Memecoins quoted in tokenized stocks (NVDA, SPY, TSLA) on Robinhood Chain, with liquidity and latest scan risk. |
 | `rh_chain_stats` | How Robinhood Chain measures from PumpPill's index, recomputed hourly with the method in the payload. |
 | `rh_whale_wallets` | Wallets holding 10+ ETH or $50K+ in tokens, read as on-chain balances, tiered by dollars held. Measures who *can* move a pool, not who is right. |
-| `rh_wallet_record` | One Robinhood Chain wallet's holdings and trades off the chain's own feed. Sell sizes are floors, never profit. |
+| `rh_wallet_record` | One Robinhood Chain wallet's holdings and trades off the chain's own feed. Sell sizes are floors, never profit. Names the FOMO app trader the wallet was matched to, when there is one. |
 | `rh_early_wallets` | Robinhood Chain wallets whose first buy landed early on tokens that later crossed $100K, with the base rate beside every rate. |
 | `sol_early_wallets` | Solana wallets recorded among a token's first buyers on tokens that later reached 5x, with the base rate beside every rate. |
 | `sol_token_detail` | Any Solana token by mint: holders, bundled-launch read, what the deployer still holds, socials, and a one-sentence verdict. |
 | `outcomes_measured` | Forward-measured outcomes across both chains: the share of logged tokens that doubled, reached 5x, 10x, or never moved. Losers are in the denominator. |
 | `exit_check` | Can this token be sold, and what can the deployer still do to it: mint and freeze authority, dev share of supply, the liquidity position. Both chains. |
-| `fomo_gathering` | Tokens several different FOMO app traders bought inside a window (default 3 traders in 60 minutes), on both chains, with the market cap of the latest buy. Counts FOMO users, not all buyers; no trade sizes. |
-| `search` | Find PumpPill's read for a Robinhood Chain address, a Solana mint, or a ticker. Returns ids for `fetch`. Built for ChatGPT connectors and deep research. |
+| `fomo_gathering` | Tokens several different FOMO app traders bought inside a window (default 3 traders in 60 minutes), on both chains. Each row has the first and the latest buy seen with their market caps, how many of those traders are still in, and PumpPill's own risk read of the token. Counts FOMO users, not all buyers; no trade sizes. |
+| `fomo_trader` | What one FOMO app trader did in the last 7 days: buys with the market cap at the buy, sells with the realized profit the feed reported, a record once 15 buys have been scored, and the matched Robinhood Chain wallet. Large trades only. |
+| `room_calls` | The calls PumpPill's room posted on both chains, newest first: the rule that fired, the market cap at the post, the move since, the 7-day peak and whether it died. Losers are in the list. Open to everyone ten minutes behind; a member reads it live. |
+| `whats_moving` | One call for what is happening right now: FOMO gatherings, the room's calls and newly flagged Robinhood Chain tokens. Pass the last answer's `as_of` back as `since` to get only what changed. |
+| `search` | Find PumpPill's read for a Robinhood Chain address, a Solana mint, or a ticker (Solana tickers come back as exact name matches, marked as such). Returns ids for `fetch`. Built for ChatGPT connectors and deep research. |
 | `fetch` | Fetch one result by the id `search` returned. Returns the stored read as text with its citation and as-of time. |
 | `membership_status` | Whether this connection carries an active PumpPill membership, its tier, and when it renews. An unauthenticated call answers `signed_in: false`, not an error. |
 
@@ -57,7 +66,7 @@ These answer a PumpPill member. They are listed for everyone; called without a m
 answer with what sits behind them and a link. Three of them can also be bought one call at a
 time with x402 (see [Pay per call](#pay-per-call-x402)).
 
-21 tools in all: 17 public, 4 for members, 3 of those payable per call.
+24 tools in all: 20 public, 4 for members, 3 of those payable per call.
 
 | Tool | What it returns |
 |---|---|
@@ -195,6 +204,10 @@ names both ways in.
 - An outcome figure is a count, not a success rate for anyone who bought. Entry is the market cap
   at the moment PumpPill logged the token, which is not a price anyone was offered.
 - `found: false` is an honest miss. Say so rather than filling the gap.
+- FOMO figures count traders on one app whose feed shows large trades only. Say "FOMO traders",
+  not "buyers", and never quote a trade size: none is known.
+- `trade_link` opens the token in PumpPill's Telegram trade bot. Offer it when someone asks how
+  to buy or sell. A flagged token carries one too, so it is never a recommendation.
 
 ## Privacy
 
