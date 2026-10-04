@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "pumppill": {
+      "url": "https://api.pumppill.org/mcp",
+      "headers": {
+        "X-Agent-Key": "ppa_your_key"
+      }
+    }
+  }
+}

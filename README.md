@@ -4,15 +4,15 @@
 
 # PumpPill MCP server
 
-Read-only token intelligence for **Robinhood Chain** (chainId 4663) and **Solana**, served as a
-hosted [Model Context Protocol](https://modelcontextprotocol.io) server.
+Token intelligence for **Robinhood Chain** (chainId 4663) and **Solana**, and **agentic trading**
+on Robinhood Chain, served as a hosted [Model Context Protocol](https://modelcontextprotocol.io) server.
 
 ```
 https://api.pumppill.org/mcp
 ```
 
-Streamable HTTP. No key, no account, nothing to install. Registry name:
-`org.pumppill/token-safety` (v1.3.0). How-to page: <https://www.pumppill.org/for-agents>
+Streamable HTTP. No key, no account, nothing to install for the read tools. Registry name:
+`org.pumppill/token-safety` (v1.4.0). How-to page: <https://www.pumppill.org/for-agents>
 
 This repository holds the connection instructions, example client configs and the registry
 manifest. The server itself is hosted by PumpPill; its source is not published here.
@@ -33,9 +33,15 @@ Nothing here predicts a price or recommends a trade. Answers about a token carry
 that opens it in PumpPill's Telegram trade bot; it is a place to trade, present on every token
 alike, not a pick.
 
+And, with an agent key from the trade bot, your agent can trade: it checks a rule you built on
+[pumppill.org/customize](https://www.pumppill.org/customize) and buys new matches from your PumpPill
+trade bot wallet. PumpPill reads each token before any buy and refuses a red flag, your limits
+apply, and every order lands in your Telegram with an off switch. See
+[Agentic trading](#agentic-trading-4-tools-agent-key).
+
 ## Tools
 
-### Public (20 tools, read-only, no key)
+### Public (22 tools, read-only, no key)
 
 | Tool | What it returns |
 |---|---|
@@ -56,6 +62,8 @@ alike, not a pick.
 | `fomo_trader` | What one FOMO app trader did in the last 7 days: buys with the market cap at the buy, sells with the realized profit the feed reported, a record once 15 buys have been scored, and the matched Robinhood Chain wallet. Large trades only. |
 | `room_calls` | The calls PumpPill's room posted on both chains, newest first: the rule that fired, the market cap at the post, the move since, the 7-day peak and whether it died. Losers are in the list. Open to everyone ten minutes behind; a member reads it live. |
 | `whats_moving` | One call for what is happening right now: FOMO gatherings, the room's calls and newly flagged Robinhood Chain tokens. Pass the last answer's `as_of` back as `since` to get only what changed. |
+| `best_calls` | The room's calls that reached 2x, 5x, 10x or 20x+ after the post, on both chains, only where PumpPill's own price readings after the call confirm the peak. The best of the room, not its record: `room_calls` is the full list with losers. |
+| `rule_matches` | The Robinhood Chain tokens that pass every filter of a rule built on pumppill.org/customize, judged by PumpPill. `rule` is the code (`pp1.…`) the Customize page writes. Each token comes with each filter's reading. |
 | `search` | Find PumpPill's read for a Robinhood Chain address, a Solana mint, or a ticker (Solana tickers come back as exact name matches, marked as such). Returns ids for `fetch`. Built for ChatGPT connectors and deep research. |
 | `fetch` | Fetch one result by the id `search` returned. Returns the stored read as text with its citation and as-of time. |
 | `membership_status` | Whether this connection carries an active PumpPill membership, its tier, and when it renews. An unauthenticated call answers `signed_in: false`, not an error. |
@@ -66,7 +74,7 @@ These answer a PumpPill member. They are listed for everyone; called without a m
 answer with what sits behind them and a link. Three of them can also be bought one call at a
 time with x402 (see [Pay per call](#pay-per-call-x402)).
 
-24 tools in all: 20 public, 4 for members, 3 of those payable per call.
+30 tools in all: 22 public, 4 for members (3 of those payable per call), 4 for agentic trading.
 
 | Tool | What it returns |
 |---|---|
@@ -74,6 +82,23 @@ time with x402 (see [Pay per call](#pay-per-call-x402)).
 | `premium_calls_recent` | The premium call table: Solana tokens PumpPill logged for members, newest first, with the market cap at logging and the move since. |
 | `my_watched_wallets` | The Robinhood Chain wallets this member follows: what each holds, its record beside the chain's base rate, recent activity. |
 | `x_chatter` | What X has been saying about one contract: posts naming it, distinct accounts, combined reach, and each poster's record on earlier calls. **Spends:** may use an hourly live-read budget. Annotated not read-only and not idempotent. |
+
+### Agentic trading (4 tools, agent key)
+
+A member's AI agent buys and sells Robinhood Chain tokens from their PumpPill trade bot wallet. The
+key (`ppa_…`) is made in [@PumpPill_Trade_Bot](https://t.me/PumpPill_Trade_Bot) under Settings, AI agent,
+and sent as the header `X-Agent-Key`. Open to everyone for 30 days from the first key, then part of
+PumpPill Premium. Full guide: <https://www.pumppill.org/learn/agentic-trading-set-up-your-ai-agent>
+
+| Tool | What it does |
+|---|---|
+| `agent_buy` | Files one buy in ETH. PumpPill reads the token first and refuses a HIGH or CRITICAL read, or a token it has not read (the member can switch refusal off). The member's per-buy and daily max apply, and a token is not bought twice in 24 hours. The order is written down before the bot places it. **Moves real money:** annotated destructive, so a well-behaved client asks first. |
+| `agent_sell` | Sells a percent of a holding. Never refused for the token's read. **Moves real money.** |
+| `agent_order` | The state of one order: filed, running, done (with the transaction), failed, refused (with the reason) or skipped. |
+| `agent_status` | The agent switch, the wallet's ETH, the member's limits and what is left today, and the last five orders. |
+
+Every order, placed or refused, is a Telegram message to the member with a one-tap "Turn agent off".
+The agent never sees the wallet's private key.
 
 ### Resource and prompts
 
@@ -133,6 +158,7 @@ Or by hand, in `.vscode/mcp.json` (VS Code names the transport):
 ### ChatGPT
 
 Add it as a connector with the same URL. `search` and `fetch` are the tools ChatGPT calls.
+ChatGPT cannot send a custom header, so it cannot use the member tools or trade.
 
 ### Stdio-only clients
 
@@ -152,6 +178,18 @@ The whole connect line can be copied from the member's page at
 <https://www.pumppill.org/premium>. In Cursor that is a `"headers"` object beside the URL; see
 [`examples/cursor-mcp-member.json`](examples/cursor-mcp-member.json). Treat the claim like a
 password: keep it in a header, never in a URL, and never commit it.
+
+### Agentic trading
+
+Send the agent key as a header. Claude Code:
+
+```
+claude mcp add --transport http pumppill https://api.pumppill.org/mcp --header "X-Agent-Key: ppa_your_key"
+```
+
+Cursor, Windsurf, Cline: see [`examples/cursor-mcp-agent.json`](examples/cursor-mcp-agent.json). Then paste the
+instructions the AI agent card on <https://www.pumppill.org/customize> writes. Buying on its own needs an
+agent that runs on a schedule; a chat window only acts while you talk to it.
 
 ### Check the connection
 
@@ -193,6 +231,8 @@ names both ways in.
   and `x_chatter`. Both are annotated as not read-only and not idempotent so a client asks
   before calling them.
 - **Rate limits:** 240 requests a minute per address and 60 a minute per client, then HTTP 429.
+- **Two tools move money**, the member's own and only with their agent key: `agent_buy` and
+  `agent_sell`. Both are annotated destructive and not idempotent. Limits are the member's own.
 - **Coverage:** answers cover what PumpPill has scanned, not every contract on either chain.
 
 ## How to read the answers
