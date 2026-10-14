@@ -2,8 +2,8 @@
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "org.pumppill/token-safety",
   "title": "PumpPill — token safety and measured outcomes",
-  "description": "Token safety, FOMO flow, graded calls and agentic trading on Robinhood Chain and Solana; x402",
-  "version": "1.4.0",
+  "description": "Robinhood Chain data for agents: launches, flow, swaps, momentum calls, waves, safety; Solana; x402",
+  "version": "1.6.0",
   "websiteUrl": "https://www.pumppill.org/for-agents",
   "repository": {
     "url": "https://github.com/JackedBased/pumppill-mcp",

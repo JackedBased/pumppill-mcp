@@ -12,7 +12,7 @@ https://api.pumppill.org/mcp
 ```
 
 Streamable HTTP. No key, no account, nothing to install for the read tools. Registry name:
-`org.pumppill/token-safety` (v1.4.0). How-to page: <https://www.pumppill.org/for-agents>
+`org.pumppill/token-safety` (v1.6.0). How-to page: <https://www.pumppill.org/for-agents>
 
 This repository holds the connection instructions, example client configs and the registry
 manifest. The server itself is hosted by PumpPill; its source is not published here.
@@ -23,7 +23,13 @@ The questions that cost people money: can this contract be sold, which contract 
 behind a ticker, what has this deployer launched before, which wallets hold enough to move a
 pool, and what happened to the tokens PumpPill logged, with the losers counted.
 
-And what is happening now: which tokens traders on the FOMO app are gathering on, with
+And the chain as it happens: what launched in the last hours with its market now, one token's
+24 hour buys and sells with the developer's launch record and the wallet that funded the
+developer, the token's trade tape, PumpPill's Ignition momentum calls with the 28-day record of
+their exit rule (losers included), and the themes spreading through new launch names on
+Robinhood Chain and Solana. Wallets come as prefixes.
+
+And what traders are doing: which tokens traders on the FOMO app are gathering on, with
 PumpPill's own risk read beside each one, and the calls PumpPill's room posted with how each has
 done since, losers included. `whats_moving` returns both, plus the newest flags, in one call.
 
@@ -41,10 +47,16 @@ apply, and every order lands in your Telegram with an off switch. See
 
 ## Tools
 
-### Public (22 tools, read-only, no key)
+### Public (28 tools, read-only, no key)
 
 | Tool | What it returns |
 |---|---|
+| `rh_new_launches` | Tokens launched on Robinhood Chain in the last 1-72 hours, newest first, each with launchpad and its market now (market cap, liquidity, 24h volume, 1h and 24h change). `min_mc_usd` filters out small launches. |
+| `rh_token_snapshot` | One Robinhood Chain token as it trades now: market, 24h buys and sells with distinct buyer and seller wallets, whether it is an official Robinhood stock token, the developer's launch record and the wallet that first funded the developer, with that funder's record. |
+| `rh_swaps` | One token's latest stored swaps, newest first: time, side, wallet prefix, ETH sent on a buy, token amount, venue and transaction hash. A sell's ETH is left empty because the router's minimum is not what the seller received. |
+| `rh_ignition_calls` | PumpPill's Ignition momentum calls on Robinhood Chain, each with the market cap at the call, now, and the move since, plus the 28-day record of the exit rule on every signal, losers included. Thirty minutes behind the members. |
+| `launch_waves` | Confirmed launch waves: a word in new token names that jumped to 15+ launches a day at 6x its normal rate and spread over 10+ names, on Robinhood Chain and Solana, with why it qualified and the biggest token so far. |
+| `agents_leaderboard` | Trading agents members wrote in plain English in PumpPill's Telegram bot, ranked by graded Robinhood Chain results over 7 or 30 days, losers counted, before fees, with rules, exits and a link to copy each. |
 | `rh_token_safety` | The stored safety read for one Robinhood Chain token: sellability, launch flags with evidence, where the launch money went, and the move since PumpPill first logged it. Never triggers a scan. |
 | `rh_ticker_resolve` | The one Robinhood Chain contract worth naming for a ticker: alive, $10K+ in its pool, not flagged HIGH or CRITICAL. Other contracts using the name come back as a count. |
 | `rh_deployer_record` | What one Robinhood Chain wallet has launched and how those went: tokens, liveness, liquidity, which crossed $100K. |
@@ -160,7 +172,19 @@ Or by hand, in `.vscode/mcp.json` (VS Code names the transport):
 Add it as a connector with the same URL. `search` and `fetch` are the tools ChatGPT calls.
 ChatGPT cannot send a custom header, so it cannot use the member tools or trade.
 
-### Stdio-only clients
+### OpenAI Agents SDK
+
+```python
+from agents import Agent
+from agents.mcp import MCPServerStreamableHttp
+
+async with MCPServerStreamableHttp(params={"url": "https://api.pumppill.org/mcp"}) as pumppill:
+    agent = Agent(name="RH reader", mcp_servers=[pumppill])
+```
+
+See [`examples/openai-agents.py`](examples/openai-agents.py).
+
+### Stdio-only clients and agent frameworks (ElizaOS and others)
 
 ```bash
 npx -y mcp-remote https://api.pumppill.org/mcp
