@@ -19,6 +19,10 @@ manifest. The server itself is hosted by PumpPill; its source is not published h
 
 ## What it answers
 
+For trading bots, one call before a buy: `pre_trade_check` answers `clear`, `caution`, `avoid` or
+`unknown` for a Robinhood Chain contract or a Solana mint, with the reasons. The same answer is
+plain HTTP at `GET https://api.pumppill.org/api/pretrade/{address}`, free and without a key.
+
 The questions that cost people money: can this contract be sold, which contract is the real one
 behind a ticker, what has this deployer launched before, which wallets hold enough to move a
 pool, and what happened to the tokens PumpPill logged, with the losers counted.
@@ -47,10 +51,11 @@ apply, and every order lands in your Telegram with an off switch. See
 
 ## Tools
 
-### Public (28 tools, read-only, no key)
+### Public (29 tools, read-only, no key)
 
 | Tool | What it returns |
 |---|---|
+| `pre_trade_check` | For a trading agent's risk step: one decision for a Robinhood Chain contract or a Solana mint, `clear`, `caution`, `avoid` or `unknown`, with the reasons worst first. `avoid` = cannot sell, deployer can still mint or freeze, high-risk contract read, launch group selling, or dead. `unknown` = no stored read, never the same as `clear`. Also plain HTTP: `GET https://api.pumppill.org/api/pretrade/{address}`. |
 | `rh_new_launches` | Tokens launched on Robinhood Chain in the last 1-72 hours, newest first, each with launchpad and its market now (market cap, liquidity, 24h volume, 1h and 24h change). `min_mc_usd` filters out small launches. |
 | `rh_token_snapshot` | One Robinhood Chain token as it trades now: market, 24h buys and sells with distinct buyer and seller wallets, whether it is an official Robinhood stock token, the developer's launch record and the wallet that first funded the developer, with that funder's record. |
 | `rh_swaps` | One token's latest stored swaps, newest first: time, side, wallet prefix, ETH sent on a buy, token amount, venue and transaction hash. A sell's ETH is left empty because the router's minimum is not what the seller received. |
